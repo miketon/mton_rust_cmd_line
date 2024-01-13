@@ -3,16 +3,27 @@ use std::error::Error;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 
+// == "channels" of an image
+// - r: number_lines
+// - g: files
+//  - files is Vec<> vs bool and requires more data
+//  - so we switched it to line up with the green channel 
+//  because human vision is more indexed to green cones
+// - b: number_nonblank_lines
 #[derive(Debug)]
 pub struct Config {
-    files: Vec<String>,
     number_lines: bool,
+    files: Vec<String>,
     number_nonblank_lines: bool,
 }
 
+// == aliasing is a uniform way to manage "noise"
+// - where noise is analagous to errors
 // reduce verbosity of returning type and heap error address
 type MyResult<T> = Result<T, Box<dyn Error>>;
 
+// == akin to processing multiple image channels in a batch
+// - where each file it attempts to open and process
 // default all var and funcs are private
 // - using 'pub' here to grant main.rs visibility
 pub fn run(config: Config) -> MyResult<()> {
@@ -22,10 +33,28 @@ pub fn run(config: Config) -> MyResult<()> {
             // good form to eprint error to stderr
             Err(err) => eprintln!("Failed to open {}: {}", filename, err),
             Ok(file) => {
-                // _ place holder, currently we aren't printing line numbers
-                //for (_, line) in file.lines().enumerate() {
-                for line in file.lines(){
-                    println!("{}", line?);
+                if config.number_nonblank_lines{
+                    let mut i=0;
+                    for line in file.lines(){
+                        let line = line?;
+                        if !line.trim().is_empty(){
+                            i+=1;
+                            println!("{}:{}", i, line);
+                        }
+                        else{
+                            println!("");
+                        }
+                    } 
+                }
+                else if config.number_lines{
+                    // _ place holder, currently we aren't printing line numbers
+                    for (l_num, line) in file.lines().enumerate(){
+                        println!("{}:{}",l_num, line?);
+                    }
+                } else {
+                    for line in file.lines() {
+                        println!("{}", line?);
+                    }
                 }
             }
         }
@@ -34,6 +63,8 @@ pub fn run(config: Config) -> MyResult<()> {
     Ok(())
 }
 
+// == initializes color depth
+// - configures the options and flags of how output is rendered
 pub fn get_args() -> MyResult<Config> {
     let matches = App::new("catr")
         .version("0.1.0")
@@ -72,13 +103,15 @@ pub fn get_args() -> MyResult<Config> {
         .get_matches();
     
     Ok(Config{
-        // because there's a default value, it should be save to call unwrap()
+        // because there's a default value, it should be safe to call unwrap()
         files: matches.values_of_lossy("files").unwrap(),
         number_lines: matches.is_present("line_numbers"),
         number_nonblank_lines: matches.is_present("line_numbers_non_blank")
     })
 }
 
+// == handles input source
+// - either live stream (stdin) or from disc (file)
 fn open(filename: &str) -> MyResult<Box<dyn BufRead>> {
     match filename {
         // when filename is "-"
