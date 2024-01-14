@@ -29,31 +29,33 @@ type MyResult<T> = Result<T, Box<dyn Error>>;
 pub fn run(config: Config) -> MyResult<()> {
     for filename in &config.files{
         // borrowing &filename
+        // @audit : why borrow?
         match open(&filename) {
             // good form to eprint error to stderr
             Err(err) => eprintln!("Failed to open {}: {}", filename, err),
             Ok(file) => {
-                if config.number_nonblank_lines{
-                    let mut i=0;
-                    for line in file.lines(){
-                        let line = line?;
-                        if !line.trim().is_empty(){
-                            i+=1;
-                            println!("{}:{}", i, line);
+                let mut valid_line_id = 0; // skip empty line
+                // returning id and result from enumerate ~ perf diff
+                // - line_id : helps clarify when we want to print ALL line number
+                for (line_id, line_result) in file.lines().enumerate(){
+                    // Unwrap once and store the value 
+                    // - error because calling line? a 2nd time tries to move 
+                    // a value that's no longer there
+                    let line = line_result?;
+                    if config.number_lines{
+                        println!("{:4}\t{}", line_id+1, line);
+                    }
+                    else if config.number_nonblank_lines{
+                        if line.is_empty(){
+                            println!();
                         }
                         else{
-                            println!("");
+                            valid_line_id += 1;
+                            println!("{:4}\t{}", valid_line_id, line);
                         }
-                    } 
-                }
-                else if config.number_lines{
-                    // _ place holder, currently we aren't printing line numbers
-                    for (l_num, line) in file.lines().enumerate(){
-                        println!("{}:{}",l_num, line?);
                     }
-                } else {
-                    for line in file.lines() {
-                        println!("{}", line?);
+                    else{
+                        println!("{}", line);
                     }
                 }
             }
