@@ -43,15 +43,20 @@ pub fn run(config: Config) -> MyResult<()> {
                     // a value that's no longer there
                     let line = line_result?;
                     if config.number_lines{
-                        println!("{:4}\t{}", line_id+1, line);
+                        // {:>6} = text aligned to right with 6 characters
+                        // {:<6} = left justified
+                        // {:^6} = center justified
+                        println!("{:>6}\t{}", line_id+1, line);
                     }
                     else if config.number_nonblank_lines{
+                        // line.is_empty() == true if length = 0, false if there is whitespace tho
+                        // line.trim().is_empty() == true if only whitespace (tabs...etc)
                         if line.is_empty(){
                             println!();
                         }
                         else{
                             valid_line_id += 1;
-                            println!("{:4}\t{}", valid_line_id, line);
+                            println!("{:>6}\t{}", valid_line_id, line);
                         }
                     }
                     else{
