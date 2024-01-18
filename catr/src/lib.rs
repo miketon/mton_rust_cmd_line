@@ -27,21 +27,35 @@ type MyResult<T> = Result<T, Box<dyn Error>>;
 // default all var and funcs are private
 // - using 'pub' here to grant main.rs visibility
 pub fn run(config: Config) -> MyResult<()> {
+    // @udit-ok : why borrow?
+    // ANSWER : iterating over filenames using a reference is typical
+    // this avoids taking ownership unnecessarily
+    // - because we are only reading and not writing to these files
     for filename in &config.files{
-        // borrowing &filename
-        // @audit : why borrow?
-        match open(&filename) {
+        // no need to borrow `filename` again since it's already referenced from the iteration
+        //match open(&filename) {
+        // @udit-ok : what is the tradeoff between borrowing @iteration vs @match?
+        // ANSWER : borrow @iteration is more idiomatic in Rust 
+        // - more clarity that the value is being READ only, and no write is taking place
+        // - good practice is to borrow at minimal scope necessary
+        match open(filename) {
             // good form to eprint error to stderr
             Err(err) => eprintln!("Failed to open {}: {}", filename, err),
             Ok(file) => {
-                let mut valid_line_id = 0; // skip empty line
+                let mut valid_line_id = 0; // skip if line is empty
                 // returning id and result from enumerate ~ perf diff
                 // - line_id : helps clarify when we want to print ALL line number
-                for (line_id, line_result) in file.lines().enumerate(){
+                for (line_id, line) in file.lines().enumerate(){
                     // Unwrap once and store the value 
                     // - error because calling line? a 2nd time tries to move 
                     // a value that's no longer there
-                    let line = line_result?;
+                    // @udit-ok : shadowing is more Rustic, but is it more performant?
+                    // - reusing 'line' token reduces the naming table?
+                    //   - that would be bullshit tho, compiler should optimize that out!
+                    // - 'line_result' is arguably more explicit and readable
+                    // ANSWER : compiler is likely to optimize out diff in perf with shadowing
+                    // ... but not GUARANTEED, so it's more Rustic to manually shadow
+                    let line = line?;
                     if config.number_lines{
                         // {:>6} = text aligned to right with 6 characters
                         // {:<6} = left justified
