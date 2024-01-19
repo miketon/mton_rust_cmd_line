@@ -22,6 +22,7 @@ const SPIDERS: &str = "tests/inputs/spiders.txt";
 const BUSTLE: &str = "tests/inputs/the-bustle.txt";
 
 // ----------------------------------------------------------------------------
+// validate how cat runs
 fn run(
     // - args : &[&str] (slice of string sliceS)
     //  - a slice is a VIEW into a contiguous sequence of elements, rather than the
@@ -53,11 +54,42 @@ fn run(
 }
 
 // ----------------------------------------------------------------------------
+// validate how cat handles stdin piping
 fn run_stdin(
+    // input file to read
     input_file: &str,
+    // &[&str] - slice of args string sliceS
     args: &[&str],
+    // file of expected result to match loss against
     expected_file: &str,
 ) -> TestResult {
+    // read entire content of input and expected files into 2 String (immutable) :
+    // - 1 - input
+    // - 2 - expected
+    // this op can fail so :
+    // - '?' would return early with an error
+    //   - returns Ok() or Err<Box>
+    //   - can only be used in functions that return
+    //     - 1 - Result
+    //     - 2 - Option
+    //     - 3 - Try trait
+    let input = fs::read_to_string(input_file)?;
+    let expected = fs::read_to_string(expected_file)?;
+    Command::cargo_bin(PRG)?
+        .args(args)
+        // Write the contents of 'input' to the standard input (stdin) of the command
+        // @udit-ok : Ah! this is why we don't need to pass the '<' pipe in args
+        .write_stdin(input)
+        // Execute command and obtain 'assert' object to check
+        .assert()
+        // Ensure command executed successfully where exit_status == 0
+        .success()
+        // Check that output of stdout matches text from 'expected' file 
+        // - If this assertion fails :
+        //   - Panic
+        //   - Fail Test Run
+        .stdout(expected);
+    // This point indicates that ALL assertions PASS, return 'Ok(())'
     Ok(())
 }
 
@@ -194,4 +226,39 @@ fn all_n() -> TestResult {
 #[test]
 fn all_b() -> TestResult {
     run(&["-b", FOX, SPIDERS, BUSTLE], "tests/expected/all.b.out")
+}
+
+// ----------------------------------------------------------------------------
+#[test]
+fn bustle_stdin() -> TestResult {
+    run_stdin(
+        BUSTLE, 
+        &["-"], 
+        "tests/expected/the-bustle.txt.stdin.out"
+    )
+}
+
+#[test]
+fn bustle_stdin_n() -> TestResult {
+    run_stdin(
+        BUSTLE,
+        &["-n", "-"],
+        "tests/expected/the-bustle.txt.stdin.n.out"
+    )
+}
+
+#[test]
+fn bustle_stdin_b() -> TestResult {
+    run_stdin(
+        BUSTLE,
+        // @udit-ok : Explain the difference between having the '<' char and not
+        // &["-b", "-", "<"],
+        // ANSWER : '<' is valid in a shell context, but not a Rust context
+        // - '<' is redirection in shell, and is not a valid argument
+        //  - if we don't remove it, the program still runs, because it IGNORES 
+        //  invalid arguments
+        // - '.write_stdin(input)' is the Rust equivalent
+        &["-b", "-"],
+        "tests/expected/the-bustle.txt.stdin.b.out"
+    )
 }

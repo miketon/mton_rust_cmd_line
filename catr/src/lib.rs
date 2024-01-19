@@ -33,7 +33,7 @@ pub fn run(config: Config) -> MyResult<()> {
     // - because we are only reading and not writing to these files
     for filename in &config.files{
         // no need to borrow `filename` again since it's already referenced from the iteration
-        //match open(&filename) {
+        // match open(&filename) {
         // @udit-ok : what is the tradeoff between borrowing @iteration vs @match?
         // ANSWER : borrow @iteration is more idiomatic in Rust 
         // - more clarity that the value is being READ only, and no write is taking place
