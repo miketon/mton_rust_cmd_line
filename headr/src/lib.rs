@@ -29,7 +29,7 @@ pub fn get_args() -> MyResult<Config> {
                 .help("Input file(s)")
                 .default_value("-")
                 .multiple(true)
-                .value_name("FILE")
+                .value_name("FILES")
         )
         // -- optional arguments
         //  - unlike flags, takes_value == true
@@ -52,15 +52,22 @@ pub fn get_args() -> MyResult<Config> {
                 .default_value("10")
                 .short("n")
                 .long("lines")
-                .value_name("Lines")
+                .value_name("LINES")
         )
         // -- flags 
         .get_matches();
 
     Ok(Config {
-        files: vec!["-".to_string()],
-        lines: 10,
-        bytes: None
+        files: matches.values_of_lossy("files").unwrap(),
+        lines: matches.value_of("lines")
+            .unwrap_or("default_value")
+            .parse::<usize>()
+            .expect("Failed to parse line arguments into a number"),
+        //bytes: None
+        bytes: match matches.value_of("bytes"){
+            Some(value) => Some(value.parse::<usize>().unwrap_or_default()),
+            None => None, // Keep None if not provided
+        }
     })
 }
 
