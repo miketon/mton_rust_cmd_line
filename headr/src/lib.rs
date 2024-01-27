@@ -59,15 +59,16 @@ pub fn get_args() -> MyResult<Config> {
 
     Ok(Config {
         files: matches.values_of_lossy("files").unwrap(),
-        lines: matches.value_of("lines")
-            .unwrap_or("default_value")
-            .parse::<usize>()
-            .expect("Failed to parse line arguments into a number"),
+        lines: parse_positive_int(
+                    matches.value_of("lines").unwrap_or_default()
+               ).unwrap(),
         //bytes: None
         bytes: match matches.value_of("bytes"){
-            Some(value) => Some(value.parse::<usize>().unwrap_or_default()),
-            None => None, // Keep None if not provided
-        }
+                    Some(value) => Some(
+                        parse_positive_int(value).unwrap()
+                    ),
+                    None => None, // Keep None if not provided
+                }
     })
 }
 
