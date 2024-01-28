@@ -2,6 +2,9 @@ use clap::{
     App,
     Arg
 };
+use std::fs::File;
+use std::io::BufRead;
+use std::io::BufReader;
 use std::error::Error;
 
 //---------------------------------------------------------------------------80
@@ -13,6 +16,21 @@ pub struct Config{
     files: Vec<String>,
     lines: usize,
     bytes: Option<usize>,
+}
+
+pub fn run(config: Config) -> MyResult<()> {
+    for filename in &config.files {
+        match open(filename) {
+            Err(err) => eprintln!("Failed to open {}: {}", filename, err),
+            Ok(file) => {
+                for line in file.lines(){
+                    let line = line?;
+                    println!("{}", line);
+                }
+            }
+        }
+    }
+    Ok(())
 }
 
 pub fn get_args() -> MyResult<Config> {
@@ -34,7 +52,17 @@ pub fn get_args() -> MyResult<Config> {
         // -- optional arguments
         //  - unlike flags, takes_value == true
         .arg(
+            Arg::with_name("lines")
+                .takes_value(true)
+                .help("Number of lines")
+                .default_value("10")
+                .short("n")
+                .long("lines")
+                .value_name("LINES")
+        )
+        .arg(
             Arg::with_name("bytes")
+                .conflicts_with("lines")
                 .takes_value(true)
                 .help("Number of bytes")
                 // @audit : minimal to toggle as optional arg
@@ -44,16 +72,7 @@ pub fn get_args() -> MyResult<Config> {
                 // long desc <> defaults to with_name
                 // - unless we specify value_name here
                 .value_name("BYTES")
-        )
-        .arg(
-            Arg::with_name("lines")
-                .takes_value(true)
-                .help("Number of lines")
-                .default_value("10")
-                .short("n")
-                .long("lines")
-                .value_name("LINES")
-        )
+        ) 
         // -- flags 
         .get_matches();
 
@@ -72,9 +91,14 @@ pub fn get_args() -> MyResult<Config> {
     })
 }
 
-pub fn run(config: Config) -> MyResult<()> {
-    println!("{:#?}", config);
-    Ok(())
+fn open(filename: &str) -> MyResult<Box<dyn BufRead>> {
+    Ok(
+        Box::new(
+            BufReader::new(
+                File::open(filename)?
+            )
+        )
+    )
 }
 
 fn parse_positive_int(val: &str) -> MyResult<usize> {
