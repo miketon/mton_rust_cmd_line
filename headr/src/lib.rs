@@ -76,18 +76,26 @@ pub fn get_args() -> MyResult<Config> {
         // -- flags 
         .get_matches();
 
+    let bytes = match matches.value_of("bytes"){
+        Some(value) => Some(
+            match parse_positive_int(value){
+                Ok(num) => num,
+                Err(err) => {
+                    eprintln!("illegal byte count -- {}", err);
+                    return Err(err);
+                }
+            }
+        ),
+        // Default to None if no value provided
+        None => None,
+    };
+
     Ok(Config {
         files: matches.values_of_lossy("files").unwrap(),
         lines: parse_positive_int(
                     matches.value_of("lines").unwrap_or_default()
                ).unwrap(),
-        //bytes: None
-        bytes: match matches.value_of("bytes"){
-                    Some(value) => Some(
-                        parse_positive_int(value).unwrap()
-                    ),
-                    None => None, // Keep None if not provided
-                }
+        bytes: bytes,    
     })
 }
 
