@@ -76,6 +76,17 @@ pub fn get_args() -> MyResult<Config> {
         // -- flags 
         .get_matches();
 
+    let lines = 
+    match parse_positive_int(
+            matches.value_of("lines").unwrap_or_default()
+    ){
+        Ok(num) => num,
+        Err(err) => {
+            eprintln!("illegal line count -- {}", err);
+            return Err(err);
+        }
+    };
+
     let bytes = match matches.value_of("bytes"){
         Some(value) => Some(
             match parse_positive_int(value){
@@ -92,10 +103,8 @@ pub fn get_args() -> MyResult<Config> {
 
     Ok(Config {
         files: matches.values_of_lossy("files").unwrap(),
-        lines: parse_positive_int(
-                    matches.value_of("lines").unwrap_or_default()
-               ).unwrap(),
-        bytes: bytes,    
+        lines,
+        bytes,    
     })
 }
 

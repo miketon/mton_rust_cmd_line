@@ -32,3 +32,16 @@ fn dies_bad_bytes() -> TestResult {
 
     Ok(())
 }
+
+#[test]
+fn dies_bad_lines() -> TestResult {
+    let bad = random_string();
+    let expected = format!("illegal line count -- {}", &bad);
+    Command::cargo_bin(PRG)?
+        .args(&["-n", &bad, EMPTY])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(expected));
+
+    Ok(())
+}
