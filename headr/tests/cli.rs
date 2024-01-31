@@ -45,3 +45,29 @@ fn dies_bad_lines() -> TestResult {
 
     Ok(())
 }
+
+#[test]
+fn dies_bytes_and_lines() -> TestResult {
+    let bad = random_string();
+    let expected = format!("'--lines <LINES>' cannot be used with '--bytes <BYTES>'");
+    Command::cargo_bin(PRG)?
+        .args(&["-c", &bad, "-n", &bad, EMPTY])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(expected));
+
+    Ok(())
+}
+
+#[test]
+fn dies_lines_and_bytes() -> TestResult {
+    let bad = random_string();
+    let expected = format!("'--lines <LINES>' cannot be used with '--bytes <BYTES>'");
+    Command::cargo_bin(PRG)?
+        .args(&["-n", &bad, "-c", &bad, EMPTY])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(expected));
+
+    Ok(())
+}
