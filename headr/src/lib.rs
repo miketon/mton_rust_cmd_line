@@ -42,20 +42,26 @@ pub fn get_args() -> MyResult<Config> {
         .about("Rust head")
         // -- positional arguments
         .arg(
-            Arg::with_name("files")
-                .required(true)
-                .help("Input file(s)")
-                .default_value("-")
+            Arg::with_name("files") // name of argument for code access
                 .multiple(true)
-                .value_name("FILES")
+                .default_value("-- (file path required) --")
+                // @udit-ok : because we have a default value, 
+                // 'required' is UNNECESSARY and CONTRADICTORY
+                //.required(true)
+                .help("Input file(s)")
+                .value_name("FILES") // descriptive name for USAGE DOC
         )
         // -- optional arguments
         //  - unlike flags, takes_value == true
         .arg(
             Arg::with_name("lines")
+                .default_value("10")
+                // @udit-ok : Why is takes_values not needed here?
+                // - ah is it because there's a default value?
+                // ANSWER : good form to be explicit that this takes value 
+                // ... even if there's a default
                 .takes_value(true)
                 .help("Number of lines")
-                .default_value("10")
                 .short("n")
                 .long("lines")
                 .value_name("LINES")
@@ -63,10 +69,17 @@ pub fn get_args() -> MyResult<Config> {
         .arg(
             Arg::with_name("bytes")
                 .conflicts_with("lines")
+                // @udit-ok : why is this needed ... all tests pass ...
+                // and there is no default value ...
+                // - is it because we handle it as Some() or None on return?
+                // ANSWER : Some() is handled at parsing as opposed to init
+                // - good form to be explicit that this takes a value ...
+                // - also all tests passing is not an indicator of idiomatic code
                 .takes_value(true)
                 .help("Number of bytes")
-                // @audit : minimal to toggle as optional arg
+                // @udit-ok : minimal to toggle as optional arg
                 // - short, long ... anything else ???
+                // ANSWER : simply don't mark it as 'required'
                 .short("c")
                 .long("bytes")
                 // long desc <> defaults to with_name
@@ -76,13 +89,20 @@ pub fn get_args() -> MyResult<Config> {
         // -- flags 
         .get_matches();
 
+//---------------------------------------------------------------------------80
+
+    let files = matches.values_of_lossy("files").unwrap_or_default();
+    
     let lines = 
     match parse_positive_int(
-            matches.value_of("lines").unwrap_or_default()
+        // default 'lines' value is 10 so will return a valid positive number
+        // ... will be PROBLEMATIC if that changes
+        // @audit : BAD FORM to implicitly bury that dependency
+        matches.value_of("lines").unwrap_or_default()
     ){
         Ok(num) => num,
         Err(err) => {
-            eprintln!("illegal line count -- {}", err);
+            eprintln!("illegal line count -- {} {}", err, matches.value_of("lines").unwrap_or_default());
             return Err(err);
         }
     };
@@ -100,9 +120,11 @@ pub fn get_args() -> MyResult<Config> {
         // Default to None if no value provided
         None => None,
     };
+ 
+//---------------------------------------------------------------------------80
 
     Ok(Config {
-        files: matches.values_of_lossy("files").unwrap(),
+        files,
         lines,
         bytes,    
     })
