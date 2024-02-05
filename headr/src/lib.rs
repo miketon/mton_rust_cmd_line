@@ -44,7 +44,11 @@ pub fn get_args() -> MyResult<Config> {
         .arg(
             Arg::with_name("files") // name of argument for code access
                 .multiple(true)
-                .default_value("-- (file path required) --")
+                //.default_value("-- (file path required) --")
+                // @audit : by convention the "-" char signals stdin
+                // ex: "minus one" | cargo run
+                // ... update with ACTUAL FUNCTIONALITY PLEASE
+                .default_value("-")
                 // @udit-ok : because we have a default value, 
                 // 'required' is UNNECESSARY and CONTRADICTORY
                 //.required(true)
@@ -68,6 +72,7 @@ pub fn get_args() -> MyResult<Config> {
         )
         .arg(
             Arg::with_name("bytes")
+                // mutually exclusive with lines : one or the other only
                 .conflicts_with("lines")
                 // @udit-ok : why is this needed ... all tests pass ...
                 // and there is no default value ...
@@ -75,6 +80,7 @@ pub fn get_args() -> MyResult<Config> {
                 // ANSWER : Some() is handled at parsing as opposed to init
                 // - good form to be explicit that this takes a value ...
                 // - also all tests passing is not an indicator of idiomatic code
+                // ALSO : takes_value==true indicates this is NOT a FLAG
                 .takes_value(true)
                 .help("Number of bytes")
                 // @udit-ok : minimal to toggle as optional arg
@@ -91,41 +97,44 @@ pub fn get_args() -> MyResult<Config> {
 
 //---------------------------------------------------------------------------80
 
+    // alternative is `unwrap_or_else(lambda)`
+    // - this makes sense when the lambda is computationally expensive
+    // - because, it runs LAZILY and are only called when unwrap fails
+    // unwrap_or_default is EAGER would add an op 
+    // - in this case the default is a static string value : "files"
+    // - so neglible computation overhead
     let files = matches.values_of_lossy("files").unwrap_or_default();
-    
-    let lines = 
-    match parse_positive_int(
-        // default 'lines' value is 10 so will return a valid positive number
-        // ... will be PROBLEMATIC if that changes
-        // @audit : BAD FORM to implicitly bury that dependency
-        matches.value_of("lines").unwrap_or_default()
-    ){
-        Ok(num) => num,
-        Err(err) => {
-            eprintln!("illegal line count -- {} {}", err, matches.value_of("lines").unwrap_or_default());
-            return Err(err);
-        }
-    };
+   
+    let lines = matches
+        .value_of("lines")
+        .map(parse_positive_int)
+        .transpose()
+        .map_err(|e| format!("illegal line count -- {}", e))?;
 
-    let bytes = match matches.value_of("bytes"){
-        Some(value) => Some(
-            match parse_positive_int(value){
-                Ok(num) => num,
-                Err(err) => {
-                    eprintln!("illegal byte count -- {}", err);
-                    return Err(err);
-                }
-            }
-        ),
-        // Default to None if no value provided
-        None => None,
-    };
- 
+    let bytes = matches
+        // returns Option<&str>
+        .value_of("bytes")
+        // -1- ::map unpacks &str from Some and sends it to parse
+        // -2-  parse returns Option<Result<T, E>> 
+        //  - where T is usize 
+        .map(parse_positive_int)
+        // transpose between Option<Result<T, E>> => Result<Option<T>, E> 
+        .transpose()
+        // error is deferred until after transpose
+        // and transforms the error variant of the Result
+        .map_err(|e| format!("illegal byte count -- {}", e))
+        // handles any error by immediately returning it
+        ?;
+       
 //---------------------------------------------------------------------------80
 
     Ok(Config {
         files,
-        lines,
+        // @udit-ok : Why do we have to unwrap here?
+        // ANSWER : Ah because config defined this as a usize
+        // ... and we have returned it as an Option<usize> so we need to unwrap
+        lines : lines.unwrap(), // has default arg and safe to unwrap
+        // leave this as an Option, matches config define
         bytes,    
     })
 }
