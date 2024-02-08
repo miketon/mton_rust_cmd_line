@@ -3,6 +3,7 @@ use clap::{
     Arg
 };
 use std::fs::File;
+use std::io;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::error::Error;
@@ -44,10 +45,7 @@ pub fn get_args() -> MyResult<Config> {
         .arg(
             Arg::with_name("files") // name of argument for code access
                 .multiple(true)
-                //.default_value("-- (file path required) --")
-                // @audit : by convention the "-" char signals stdin
-                // ex: "minus one" | cargo run
-                // ... update with ACTUAL FUNCTIONALITY PLEASE
+                // by convention the "-" char signals stdin to bash tools
                 .default_value("-")
                 // @udit-ok : because we have a default value, 
                 // 'required' is UNNECESSARY and CONTRADICTORY
@@ -140,13 +138,12 @@ pub fn get_args() -> MyResult<Config> {
 }
 
 fn open(filename: &str) -> MyResult<Box<dyn BufRead>> {
-    Ok(
-        Box::new(
-            BufReader::new(
-                File::open(filename)?
-            )
-        )
-    )
+    match filename {
+        // take input from stdin
+        "-" => Ok(Box::new(BufReader::new(io::stdin()))),
+        // else try to read from file
+        _ => Ok(Box::new(BufReader::new(File::open(filename)?))),
+    }
 }
 
 fn parse_positive_int(val: &str) -> MyResult<usize> {
