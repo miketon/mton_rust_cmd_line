@@ -1,5 +1,6 @@
+**/*.bk
+**/*.swp
+**/*.swo
+
 # Rust artifacts
 */target
-**/*.rs.bk
-**/*.rs.swp
-**/*.rs.swo
