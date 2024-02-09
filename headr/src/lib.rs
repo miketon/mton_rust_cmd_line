@@ -23,8 +23,17 @@ pub fn run(config: Config) -> MyResult<()> {
     for filename in config.files {
         match open(&filename) {
             Err(err) => eprintln!("Failed to open {}: {}", filename, err),
-            Ok(_) => {
-                println!("Opened {}", filename);
+            Ok(file) => {
+                let reader = BufReader::new(file);
+                for line_result in reader.lines() {
+                    match line_result {
+                        Ok(line) => {
+                            // process each line here
+                            println!("{}", line)
+                        }
+                        Err(err) => eprintln!("Error reading line from {}: {}", filename, err)
+                    }
+                }
             }
         }
     }
