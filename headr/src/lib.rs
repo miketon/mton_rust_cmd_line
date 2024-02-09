@@ -20,14 +20,11 @@ pub struct Config{
 }
 
 pub fn run(config: Config) -> MyResult<()> {
-    for filename in &config.files {
-        match open(filename) {
+    for filename in config.files {
+        match open(&filename) {
             Err(err) => eprintln!("Failed to open {}: {}", filename, err),
-            Ok(file) => {
-                for line in file.lines(){
-                    let line = line?;
-                    println!("{}", line);
-                }
+            Ok(_) => {
+                println!("Opened {}", filename);
             }
         }
     }

@@ -1,5 +1,7 @@
 use assert_cmd::Command;
 use std::error::Error;
+use std::fs::File;
+use std::io::Read;
 use predicates::prelude::*;
 use rand::{Rng, distributions::Alphanumeric};
 
@@ -16,6 +18,21 @@ fn random_string() -> String {
         .take(7)
         .map(char::from)
         .collect()
+}
+
+fn run(args: &[&str], expected_file: &str) -> TestResult {
+    let mut file = File::open(expected_file)?;
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer)?;
+    let expected = String::from_utf8_lossy(&buffer);
+
+    Command::cargo_bin(PRG)?
+        .args(args)
+        .assert()
+        .success()
+        .stdout(predicate::eq(&expected.as_bytes() as &[u8]));
+
+    Ok(())
 }
 
 //---------------------------------------------------------------------------80
@@ -70,4 +87,11 @@ fn dies_lines_and_bytes() -> TestResult {
         .stderr(predicate::str::contains(expected));
 
     Ok(())
+}
+
+//---------------------------------------------------------------------------80
+
+#[test]
+fn empty() -> TestResult {
+    run(&[EMPTY], "tests/expected/empty.txt.out")
 }
