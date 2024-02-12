@@ -9,6 +9,9 @@ type TestResult = Result<(), Box<dyn Error>>;
 
 const PRG: &str = "headr";
 const EMPTY: &str = "./tests/inputs/empty.txt";
+const ONE: &str = "./tests/inputs/one.txt";
+const TWO: &str = "./tests/inputs/two.txt";
+const THREE: &str = "./tests/inputs/three.txt";
 
 //---------------------------------------------------------------------------80
 
@@ -20,6 +23,10 @@ fn random_string() -> String {
         .collect()
 }
 
+// - args:: an ref to string array because we want to handle filepath and 
+// flag/arg
+// - expected_file:: just a string ref because we just want to compare to 
+// 'head' output result given path+arg
 fn run(args: &[&str], expected_file: &str) -> TestResult {
     let mut file = File::open(expected_file)?;
     let mut buffer = Vec::new();
@@ -94,4 +101,19 @@ fn dies_lines_and_bytes() -> TestResult {
 #[test]
 fn empty() -> TestResult {
     run(&[EMPTY], "tests/expected/empty.txt.out")
+}
+
+#[test]
+fn one() -> TestResult {
+    run(&[ONE], "tests/expected/one.txt.out")
+}
+
+#[test]
+fn two() -> TestResult {
+    run(&[TWO], "tests/expected/two.txt.out")
+}
+
+#[test]
+fn three() -> TestResult {
+    run(&[THREE], "tests/expected/three.txt.out")
 }

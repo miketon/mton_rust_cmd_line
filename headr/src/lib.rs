@@ -28,8 +28,10 @@ pub fn run(config: Config) -> MyResult<()> {
                 for line_result in reader.lines() {
                     match line_result {
                         Ok(line) => {
+                            // normalize os newline
+                            let line_normalized = line.replace("\n", "\r\n");
                             // process each line here
-                            println!("{}", line)
+                            println!("{}", line_normalized)
                         }
                         Err(err) => eprintln!("Error reading line from {}: {}", filename, err)
                     }
