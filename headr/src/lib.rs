@@ -23,19 +23,20 @@ pub fn run(config: Config) -> MyResult<()> {
     for filename in config.files {
         match open(&filename) {
             Err(err) => eprintln!("Failed to open {}: {}", filename, err),
-            Ok(file) => {
-                let reader = BufReader::new(file);
-                for line_result in reader.lines() {
-                    match line_result {
-                        Ok(line) => {
-                            // normalize os newline
-                            let line_normalized = line.replace("\n", "\r\n");
-                            // process each line here
-                            println!("{}", line_normalized)
-                        }
-                        Err(err) => eprintln!("Error reading line from {}: {}", filename, err)
+            // - 1 - file needs to be mutable because ...
+            Ok(mut file) => {
+                let mut line = String::new();
+                for _ in 0..config.lines {
+                    // - 2 - read_line modifies the internal current position
+                    // - unwrap with ? so that if error occurs we return that
+                    let bytes = file.read_line(&mut line)?;
+                    // bytes == 0 is end of line or end of file
+                    if bytes == 0 {
+                        break;
                     }
                 }
+                print!("{}", line);
+                line.clear();
             }
         }
     }
