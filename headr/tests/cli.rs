@@ -12,6 +12,7 @@ const EMPTY: &str = "./tests/inputs/empty.txt";
 const ONE: &str = "./tests/inputs/one.txt";
 const TWO: &str = "./tests/inputs/two.txt";
 const THREE: &str = "./tests/inputs/three.txt";
+const TEN: &str = "./tests/inputs/ten.txt";
 
 //---------------------------------------------------------------------------80
 
@@ -116,4 +117,36 @@ fn two() -> TestResult {
 #[test]
 fn three() -> TestResult {
     run(&[THREE], "tests/expected/three.txt.out")
+}
+
+#[test]
+fn ten() -> TestResult {
+    run(&[TEN], "tests/expected/ten.txt.out")
+}
+
+//---------------------------------------------------------------------------80
+
+#[test]
+fn empty_n2() -> TestResult {
+    run(&[EMPTY, "-n", "2"], "tests/expected/empty.txt.n2.out")
+}
+
+#[test]
+fn one_n2() -> TestResult {
+    run(&[ONE, "-n", "2"], "tests/expected/one.txt.n2.out")
+}
+
+#[test]
+fn two_n2() -> TestResult {
+    run(&[TWO, "-n", "2"], "tests/expected/two.txt.n2.out")
+}
+
+#[test]
+fn three_n2() -> TestResult {
+    run(&[THREE, "-n", "2"], "tests/expected/three.txt.n2.out")
+}
+
+#[test]
+fn ten_n2() -> TestResult {
+    run(&[TEN, "-n", "2"], "tests/expected/ten.txt.n2.out")
 }

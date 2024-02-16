@@ -11,5 +11,6 @@ OUT_DIR="./tests/expected"
 
 for FILE in $INPUTS/*.txt; do
   BASENAME=$(basename "$FILE")
-  head $FILE > ${OUT_DIR}/${BASENAME}.out
+  head      $FILE > ${OUT_DIR}/${BASENAME}.out
+  head -n 2 $FILE > ${OUT_DIR}/${BASENAME}.n2.out
 done
