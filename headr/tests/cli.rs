@@ -132,8 +132,18 @@ fn empty_n2() -> TestResult {
 }
 
 #[test]
+fn empty_n4() -> TestResult {
+    run(&[EMPTY, "-n", "4"], "tests/expected/empty.txt.n4.out")
+}
+
+#[test]
 fn one_n2() -> TestResult {
     run(&[ONE, "-n", "2"], "tests/expected/one.txt.n2.out")
+}
+
+#[test]
+fn one_n4() -> TestResult {
+    run(&[ONE, "-n", "4"], "tests/expected/one.txt.n4.out")
 }
 
 #[test]
@@ -142,13 +152,28 @@ fn two_n2() -> TestResult {
 }
 
 #[test]
+fn two_n4() -> TestResult {
+    run(&[TWO, "-n", "4"], "tests/expected/two.txt.n4.out")
+}
+
+#[test]
 fn three_n2() -> TestResult {
     run(&[THREE, "-n", "2"], "tests/expected/three.txt.n2.out")
 }
 
 #[test]
+fn three_n4() -> TestResult {
+    run(&[THREE, "-n", "4"], "tests/expected/three.txt.n4.out")
+}
+
+#[test]
 fn ten_n2() -> TestResult {
     run(&[TEN, "-n", "2"], "tests/expected/ten.txt.n2.out")
+}
+
+#[test]
+fn ten_n4() -> TestResult {
+    run(&[TEN, "-n", "4"], "tests/expected/ten.txt.n4.out")
 }
 
 
