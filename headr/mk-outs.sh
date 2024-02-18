@@ -13,4 +13,5 @@ for FILE in $INPUTS/*.txt; do
   BASENAME=$(basename "$FILE")
   head      $FILE > ${OUT_DIR}/${BASENAME}.out
   head -n 2 $FILE > ${OUT_DIR}/${BASENAME}.n2.out
+  head -c 1 $FILE > ${OUT_DIR}/${BASENAME}.c1.out
 done

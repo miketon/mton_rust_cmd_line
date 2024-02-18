@@ -4,6 +4,7 @@ use clap::{
 };
 use std::fs::File;
 use std::io;
+use std::io::Read;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::error::Error;
@@ -25,18 +26,29 @@ pub fn run(config: Config) -> MyResult<()> {
             Err(err) => eprintln!("Failed to open {}: {}", filename, err),
             // - 1 - file needs to be mutable because ...
             Ok(mut file) => {
-                let mut line = String::new();
-                for _ in 0..config.lines {
-                    // - 2 - read_line modifies the internal current position
-                    // - unwrap with ? so that if error occurs we return that
-                    let bytes = file.read_line(&mut line)?;
-                    // bytes == 0 is end of line or end of file
-                    if bytes == 0 {
-                        break;
-                    }
+                if let Some(num_bytes) = config.bytes {
+                    let mut handle = file.take(num_bytes as u64);
+                    let mut buffer = vec![0; num_bytes];
+                    let bytes_read = handle.read(&mut buffer)?;
+                    print!(
+                        "{}",
+                        String::from_utf8_lossy(&buffer[..bytes_read])
+                    );
                 }
-                print!("{}", line);
-                line.clear();
+                else{
+                    let mut line = String::new();
+                    for _ in 0..config.lines {
+                        // - 2 - read_line mutates the file's internal cursor
+                        // - unwrap with ? so that if error occurs we return that
+                        let bytes = file.read_line(&mut line)?;
+                        // bytes == 0 is end of line or end of file
+                        if bytes == 0 {
+                            break;
+                        }
+                    }
+                    print!("{}", line);
+                    line.clear();
+                }
             }
         }
     }

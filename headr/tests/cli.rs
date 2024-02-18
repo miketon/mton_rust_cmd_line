@@ -150,3 +150,31 @@ fn three_n2() -> TestResult {
 fn ten_n2() -> TestResult {
     run(&[TEN, "-n", "2"], "tests/expected/ten.txt.n2.out")
 }
+
+
+//---------------------------------------------------------------------------80
+
+#[test]
+fn empty_c1() -> TestResult {
+    run(&[EMPTY, "-c", "1"], "tests/expected/empty.txt.c1.out")
+}
+
+#[test]
+fn one_c1() -> TestResult {
+    run(&[ONE, "-c", "1"], "tests/expected/one.txt.c1.out")
+}
+
+#[test]
+fn two_c1() -> TestResult {
+    run(&[TWO, "-c", "1"], "tests/expected/two.txt.c1.out")
+}
+
+#[test]
+fn three_c1() -> TestResult {
+    run(&[THREE, "-c", "1"], "tests/expected/three.txt.c1.out")
+}
+
+#[test]
+fn ten_c1() -> TestResult {
+    run(&[TEN, "-c", "1"], "tests/expected/ten.txt.c1.out")
+}
