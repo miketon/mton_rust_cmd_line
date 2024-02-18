@@ -15,4 +15,5 @@ for FILE in $INPUTS/*.txt; do
   head -n 2 $FILE > ${OUT_DIR}/${BASENAME}.n2.out
   head -c 1 $FILE > ${OUT_DIR}/${BASENAME}.c1.out
   head -c 2 $FILE > ${OUT_DIR}/${BASENAME}.c2.out
+  head -c 4 $FILE > ${OUT_DIR}/${BASENAME}.c4.out
 done

@@ -165,6 +165,11 @@ fn empty_c2() -> TestResult {
 }
 
 #[test]
+fn empty_c4() -> TestResult {
+    run(&[EMPTY, "-c", "4"], "tests/expected/empty.txt.c4.out")
+}
+
+#[test]
 fn one_c1() -> TestResult {
     run(&[ONE, "-c", "1"], "tests/expected/one.txt.c1.out")
 }
@@ -172,6 +177,11 @@ fn one_c1() -> TestResult {
 #[test]
 fn one_c2() -> TestResult {
     run(&[ONE, "-c", "2"], "tests/expected/one.txt.c2.out")
+}
+
+#[test]
+fn one_c4() -> TestResult {
+    run(&[ONE, "-c", "4"], "tests/expected/one.txt.c4.out")
 }
 
 #[test]
@@ -185,6 +195,11 @@ fn two_c2() -> TestResult {
 }
 
 #[test]
+fn two_c4() -> TestResult {
+    run(&[TWO, "-c", "4"], "tests/expected/two.txt.c4.out")
+}
+
+#[test]
 fn three_c1() -> TestResult {
     run(&[THREE, "-c", "1"], "tests/expected/three.txt.c1.out")
 }
@@ -195,6 +210,11 @@ fn three_c2() -> TestResult {
 }
 
 #[test]
+fn three_c4() -> TestResult {
+    run(&[THREE, "-c", "4"], "tests/expected/three.txt.c4.out")
+}
+
+#[test]
 fn ten_c1() -> TestResult {
     run(&[TEN, "-c", "1"], "tests/expected/ten.txt.c1.out")
 }
@@ -202,4 +222,9 @@ fn ten_c1() -> TestResult {
 #[test]
 fn ten_c2() -> TestResult {
     run(&[TEN, "-c", "2"], "tests/expected/ten.txt.c2.out")
+}
+
+#[test]
+fn ten_c4() -> TestResult {
+    run(&[TEN, "-c", "4"], "tests/expected/ten.txt.c4.out")
 }
