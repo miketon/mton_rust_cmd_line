@@ -176,7 +176,6 @@ fn ten_n4() -> TestResult {
     run(&[TEN, "-n", "4"], "tests/expected/ten.txt.n4.out")
 }
 
-
 //---------------------------------------------------------------------------80
 
 #[test]
@@ -252,4 +251,11 @@ fn ten_c2() -> TestResult {
 #[test]
 fn ten_c4() -> TestResult {
     run(&[TEN, "-c", "4"], "tests/expected/ten.txt.c4.out")
+}
+
+//---------------------------------------------------------------------------80
+
+#[test]
+fn multiple_files() -> TestResult {
+    run(&[EMPTY, ONE, TWO, THREE, TEN], "tests/expected/all.out")
 }
