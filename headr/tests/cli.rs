@@ -259,3 +259,8 @@ fn ten_c4() -> TestResult {
 fn multiple_files() -> TestResult {
     run(&[EMPTY, ONE, TWO, THREE, TEN], "tests/expected/all.out")
 }
+
+#[test]
+fn multiple_files_n2() -> TestResult {
+    run(&[EMPTY, ONE, TWO, THREE, TEN, "-n", "2"], "tests/expected/all.out")
+}

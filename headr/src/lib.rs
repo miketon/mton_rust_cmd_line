@@ -21,35 +21,50 @@ pub struct Config{
 }
 
 pub fn run(config: Config) -> MyResult<()> {
+    // get number of files passed as arguments
+    // - if just one file, simply print the file's text block
+    // - if > 1 file, append filename header before each text block
     let num_files = config.files.len();
-    
+   
+    // .enumerate() returns both
+    // - idx   : file_num
+    // - value : filename
     for (file_num, filename) in config.files.iter().enumerate() {
         match open(&filename) {
             Err(err) => eprintln!("Failed to open {}: {}", filename, err),
-            // - 1 - file needs to be mutable because ...
+            // (A) file needs to be mutable because :
+            // - take and read_line are ops that mut file's read cursor
             Ok(mut file) => {
+                // if files > 1 add `{filename}<==` header @text block
                 if num_files > 1 {
-                    println!{
+                    println!(
                         "{}==> {} <==",
                         if file_num > 0 {"\n"} else {""},
                         &filename
-                    };
+                    );
                 }
 
+                // if byte arg != None, print bytes
                 if let Some(num_bytes) = config.bytes {
+                    // take() :
+                    // - creates a new type (u64) segment of num_bytes
+                    // - (A) this mut op updates the file's read cursor
                     let mut handle = file.take(num_bytes as u64);
                     let mut buffer = vec![0; num_bytes];
+                    // - unwrap with ? so that if error occurs, EARLY return
                     let bytes_read = handle.read(&mut buffer)?;
                     print!(
                         "{}",
                         String::from_utf8_lossy(&buffer[..bytes_read])
                     );
                 }
-                else{
+                // else print lines
+                else {
                     let mut line = String::new();
+                    // arg handling lib => config.lines will ALWAYS be valid
                     for _ in 0..config.lines {
-                        // - 2 - read_line mutates the file's internal cursor
-                        // - unwrap with ? so that if error occurs we return that
+                        // (A) read_line mutates the file's internal cursor
+                        // - unwrap with ? so that if error occurs, EARLY return
                         let bytes = file.read_line(&mut line)?;
                         // bytes == 0 is end of line or end of file
                         if bytes == 0 {
@@ -57,6 +72,7 @@ pub fn run(config: Config) -> MyResult<()> {
                         }
                     }
                     print!("{}", line);
+                    // @audit : Why do we need to clear line?
                     line.clear();
                 }
             }
