@@ -70,10 +70,10 @@ pub fn run(config: Config) -> MyResult<()> {
                         if bytes == 0 {
                             break;
                         }
+                        print!("{}", line);
+                        // @audit : Why do we need to clear line?
+                        line.clear();
                     }
-                    print!("{}", line);
-                    // @audit : Why do we need to clear line?
-                    line.clear();
                 }
             }
         }

@@ -262,5 +262,5 @@ fn multiple_files() -> TestResult {
 
 #[test]
 fn multiple_files_n2() -> TestResult {
-    run(&[EMPTY, ONE, TWO, THREE, TEN, "-n", "2"], "tests/expected/all.out")
+    run(&[EMPTY, ONE, TWO, THREE, TEN, "-n", "2"], "tests/expected/all.n2.out")
 }
