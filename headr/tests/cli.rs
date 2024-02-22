@@ -264,3 +264,24 @@ fn multiple_files() -> TestResult {
 fn multiple_files_n2() -> TestResult {
     run(&[EMPTY, ONE, TWO, THREE, TEN, "-n", "2"], "tests/expected/all.n2.out")
 }
+
+#[test]
+fn multiple_files_n4() -> TestResult {
+    run(&[EMPTY, ONE, TWO, THREE, TEN, "-n", "4"], "tests/expected/all.n4.out")
+}
+
+#[test]
+fn multiple_files_c1() -> TestResult {
+    run(&[EMPTY, ONE, TWO, THREE, TEN, "-c", "1"], "tests/expected/all.c1.out")
+}
+
+#[test]
+fn multipile_files_c2() -> TestResult {
+    run(&[EMPTY, ONE, TWO, THREE, TEN, "-c", "2"], "tests/expected/all.c2.out")
+}
+
+#[test]
+fn multiple_files_c4() -> TestResult {
+    run(&[EMPTY, ONE, TWO, THREE, TEN, "-c", "4"], "tests/expected/all.c4.out")
+}
+
