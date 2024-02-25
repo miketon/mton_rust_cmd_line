@@ -48,22 +48,52 @@ fn run_stdin(
     input_file: &str,
     expected_file: &str,
 ) -> TestResult {
-    // Extra work here due to lossy UTF
     let mut file = File::open(expected_file)?;
     let mut buffer = Vec::new();
-    file.read_to_end(&mut buffer)?;
-    let expected = String::from_utf8_lossy(&buffer);
+    // @udit-ok : why are we reading bytes ... instead of straight up strings?
+    // ANSWER : because byte-for-byte comparison bypasses any encoding issues
+    // - bytes are a fixed set of bools with 0 or 1 as vocabs, 
+    // - opposed to text with it's large char set and NP encoding xform
+    // @udit-ok : Enumerate some example applications
+    // ANSWER : checksum, version control, sync/transfer ..etc
+    // - basically NOT text, because of encoding from :  os, nlp diff ..etc
     
+    // (A) PHOTOSHOP EQUIVALENT :
+    // - binary .psd files have complex layers that encode various color modes,
+    // blending options and transparency effects
+    // - reading this file into a buffer is essentially FLATTENING these layers,
+    // so that we can do pixel-for-pixel compare without encode or xforms
+    file.read_to_end(&mut buffer)?;
+    // Try get string from bytes as UTF-8 encoded text
+    // - lossy == invalid text fallback to Unicode unk replacement char
+    // (B) PHOTOSHOP EQUIVALENT :
+    // Converting to a format suitable for web, like JPEG
+    // - out of gamut colors replaced with nearest in gamut color = Unicode unk
+    let expected = String::from_utf8_lossy(&buffer);
+   
+    // input file is assumed as UTF-8 text 
+    // ? throws error if :
+    // - invalid char
+    // - file read fails
     let input = fs::read_to_string(input_file)?;
    
     Command::cargo_bin(PRG)?
-        // @audit : Explain this difference vs run()
+        // @udit-ok : Explain this difference vs run()
+        // ANSWER : passes content of 'input' as standard input to the command
+        // @audit : Explain exactly what write_stdin is doing
         .write_stdin(input)
         .args(args)
+        // creates Assert object that verifies command output where :
         .assert()
+        // (1) run SUCCESS : commands exit with a status of 0
         .success()
+        // (2) output SUCCESS : byte-for-byte comparison with 'expected' read 
+        // (B) PHOTOSHOP EQUIVALENT :
+        // "Difference" blend between two images == byte-for-byte compare
+        // - results in 100% black image patch if NO DIFFERENCE
         .stdout(predicate::eq(&expected.as_bytes() as &[u8]));
     
+    // returns OK indicating that test PASSED
     Ok(())
 }
 
@@ -186,8 +216,18 @@ fn one_n2() -> TestResult {
 }
 
 #[test]
+fn one_n2_stdin() -> TestResult {
+    run_stdin(&["-n", "2"], ONE, "tests/expected/one.txt.n2.out")
+}
+
+#[test]
 fn one_n4() -> TestResult {
     run(&[ONE, "-n", "4"], "tests/expected/one.txt.n4.out")
+}
+
+#[test]
+fn one_n4_stdin() -> TestResult {
+    run_stdin(&["-n", "4"], ONE, "tests/expected/one.txt.n4.out")
 }
 
 #[test]
