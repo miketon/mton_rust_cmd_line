@@ -236,8 +236,18 @@ fn two_n2() -> TestResult {
 }
 
 #[test]
+fn two_n2_stdin() -> TestResult {
+    run_stdin(&["-n", "2"], TWO, "tests/expected/two.txt.n2.out")
+}
+
+#[test]
 fn two_n4() -> TestResult {
     run(&[TWO, "-n", "4"], "tests/expected/two.txt.n4.out")
+}
+
+#[test]
+fn two_n4_stdin() -> TestResult {
+    run_stdin(&["-n", "4"], TWO, "tests/expected/two.txt.n4.out")
 }
 
 #[test]
@@ -246,8 +256,18 @@ fn three_n2() -> TestResult {
 }
 
 #[test]
+fn three_n2_stdin() -> TestResult {
+    run_stdin(&["-n", "2"], THREE, "tests/expected/three.txt.n2.out")
+}
+
+#[test]
 fn three_n4() -> TestResult {
     run(&[THREE, "-n", "4"], "tests/expected/three.txt.n4.out")
+}
+
+#[test]
+fn three_n4_stdin() -> TestResult {
+    run_stdin(&["-n", "4"], THREE, "tests/expected/three.txt.n4.out")
 }
 
 #[test]
@@ -256,8 +276,18 @@ fn ten_n2() -> TestResult {
 }
 
 #[test]
+fn ten_n2_stdin() -> TestResult {
+    run_stdin(&["-n", "2"], TEN, "tests/expected/ten.txt.n2.out")
+}
+
+#[test]
 fn ten_n4() -> TestResult {
     run(&[TEN, "-n", "4"], "tests/expected/ten.txt.n4.out")
+}
+
+#[test]
+fn ten_n4_stdin() -> TestResult {
+    run_stdin(&["-n", "4"], TEN, "tests/expected/ten.txt.n4.out")
 }
 
 //---------------------------------------------------------------------------80
