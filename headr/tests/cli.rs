@@ -78,9 +78,9 @@ fn run_stdin(
     let input = fs::read_to_string(input_file)?;
    
     Command::cargo_bin(PRG)?
-        // @udit-ok : Explain this difference vs run()
-        // ANSWER : passes content of 'input' as standard input to the command
-        // @audit : Explain exactly what write_stdin is doing
+        // @udit-ok : Explain exactly what write_stdin is doing
+        // ANSWER : simulates user manually typing the contents of 'input'
+        // and passing that as an argument to cargo_bin command
         .write_stdin(input)
         .args(args)
         // creates Assert object that verifies command output where :
@@ -187,7 +187,20 @@ fn empty_c4() -> TestResult {
 
 #[test]
 fn one() -> TestResult {
-    run(&[ONE], "tests/expected/one.txt.out")
+    // @udit-ok  : Why not combine one() and one_stdin() into a single test?
+    // ANSWER : when running cargo test, there's value in seeing both entries
+    // - rewriting may make the test maintenance easier
+    // - but having unit tests explicitly listed clarifies regressions handled
+    // - I am BIASED towards tests as a means to prevent REGRESSIONS
+    run(&[ONE], "tests/expected/one.txt.out") 
+
+    // -- here's a possible refactor
+    //let expected_output = "tests/expected/one.txt.out";
+    //let args_result = run(&[ONE], expected_output);
+    //let stdin_result = run_stdin(&[], ONE, expected_output);
+    //assert!(args_result.is_ok(), "Test with arguments failed");
+    //assert!(stdin_result.is_ok(), "Test with stdin failed");
+    //Ok(())
 }
 
 #[test]

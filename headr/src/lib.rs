@@ -71,7 +71,10 @@ pub fn run(config: Config) -> MyResult<()> {
                             break;
                         }
                         print!("{}", line);
-                        // @audit : Why do we need to clear line?
+                        // @udit-ok : Why do we need to clear line?
+                        // ANSWER : if we don't clear the line
+                        // - any test with more than one line will fail : 43
+                        // - only #[test] dies*() empyt*() and  one*() PASSES 
                         line.clear();
                     }
                 }
@@ -124,7 +127,7 @@ pub fn get_args() -> MyResult<Config> {
                 // - is it because we handle it as Some() or None on return?
                 // ANSWER : Some() is handled at parsing as opposed to init
                 // - good form to be explicit that this takes a value ...
-                // - also all tests passing is not an indicator of idiomatic code
+                // - all tests passing is not an indicator of idiomatic code
                 // ALSO : takes_value==true indicates this is NOT a FLAG
                 .takes_value(true)
                 .help("Number of bytes")
