@@ -1,4 +1,11 @@
-use clap::{App, Arg};
+use clap::{
+    App, 
+    Arg,
+    // get info from Cargo.toml
+    crate_version,
+    crate_authors,
+};
+
 use std::error::Error;
 
 type MyResult<T> = Result<T, Box<dyn Error>>;
@@ -18,10 +25,10 @@ pub fn run(config: Config) -> MyResult<()> {
 }
 
 pub fn get_args() -> MyResult<Config> {
-    let _matches = App::new("wcr")
+    let matches = App::new("wcr")
         // -- help info --
-        .version("0.1.0")
-        .author("MTON <mton@aol.com>")
+        .version(crate_version!())
+        .author(crate_authors!())
         .about("Rust wc")
         // -- positional args --
         .arg(
@@ -63,11 +70,21 @@ pub fn get_args() -> MyResult<Config> {
         )
         .get_matches();
 
+    let lines = matches.is_present("lines");
+    let words = matches.is_present("words");
+    let bytes = matches.is_present("bytes");
+    let chars = matches.is_present("chars");
+    let files = matches.values_of_lossy("files").ok_or({
+                // because default == '-' for STD_IN
+                // we should NEVER see this ERROR
+                "Failed to get the list of files from command line arguments."            
+            })?;
+
     Ok(Config{
-        files: vec!["".to_string()],
-        lines: false,
-        words: false,
-        bytes: false,
-        chars: false
+        files,
+        lines,
+        words,
+        bytes,
+        chars, 
     })
 }
