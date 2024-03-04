@@ -5,7 +5,6 @@ use clap::{
     crate_version,
     crate_authors,
 };
-
 use std::error::Error;
 
 type MyResult<T> = Result<T, Box<dyn Error>>;
@@ -20,11 +19,14 @@ pub struct Config{
 }
 
 pub fn run(config: Config) -> MyResult<()> {
+    // @todo : process files wrt arguments and business logic here
     println!("{:#?}", config);
     Ok(())
 }
 
 pub fn get_args() -> MyResult<Config> {
+
+    // [args] parsing
     let matches = App::new("wcr")
         // -- help info --
         .version(crate_version!())
@@ -70,15 +72,32 @@ pub fn get_args() -> MyResult<Config> {
         )
         .get_matches();
 
-    let lines = matches.is_present("lines");
-    let words = matches.is_present("words");
-    let bytes = matches.is_present("bytes");
+    // [io] file(s) check
+    // default -> '-' which signifies STD_IN flow
+    // - so we can safely unwrap or default
+    let files = matches.values_of_lossy("files").unwrap_or_default();
+
+    // [flag] check    
+    let mut lines = matches.is_present("lines");
+    let mut words = matches.is_present("words");
+    let mut bytes = matches.is_present("bytes");
     let chars = matches.is_present("chars");
-    let files = matches.values_of_lossy("files").ok_or({
-                // because default == '-' for STD_IN
-                // we should NEVER see this ERROR
-                "Failed to get the list of files from command line arguments."            
-            })?;
+
+    // @udit-ok : Explain what this is doing
+    // ANSWER : mimics default behaviour of Unix wc command
+    // - which is if no flag set, lines, words, bytes == TRUE
+    // - so iter() over all() and test each element where :
+    //   - |v| v == &false // lambda check if each |v| is false
+    //   - if ALL are FALSE, set lines, words and bytes to TRUE
+    // @PHOTOSHOP : lines, words, bytes, chars are layers
+    // - checking if all layers are hidden before proceeding with a 
+    // certain action :
+    //   - if all() are hidden, set : lines, words, bytes => visible
+    if[words, bytes, chars, lines].iter().all(|v| v == &false) {
+        lines = true;
+        words = true;
+        bytes = true;
+    }
 
     Ok(Config{
         files,
