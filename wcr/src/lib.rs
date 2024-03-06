@@ -86,20 +86,33 @@ pub fn get_args() -> MyResult<Config> {
     // @udit-ok : Explain what this is doing
     // ANSWER : mimics default behaviour of Unix wc command
     // - which is if no flag set, lines, words, bytes == TRUE
-    // - so iter() over all() and test each element where :
+    // - create temp list using slice with all flags [words, bytes, chars lines]
+    // - then slice::iter() over all() and test each element where :
     //   - |v| v == &false // lambda check if each |v| is false
-    //   - if ALL are FALSE, set lines, words and bytes to TRUE
+    // - if all() are FALSE, set lines, words and bytes to TRUE
     // @PHOTOSHOP : lines, words, bytes, chars are layers
     // - checking if all layers are hidden before proceeding with a 
     // certain action :
     //   - if all() are hidden, set : lines, words, bytes => visible
+    // @udit-ok : Explain why compare ref &false vs value false
+    // ANSWER : because iter() yields REF to each element of the array
+    // ... and not to the VALUE of each element in the array
+    //  - checking v == &false directly, SKIPS having to deref v ...
+    //    - but if we INSIST on dereferencing v, here are options
+    //      - .all(|&v| v == false) // idiomatic deref element : a & bool
+    //      - .all(|v| *v == false) // ref to references : a && bool
+    // @PHOTOSHOP : Instead of the direct eye icon to toggle visibility per layer
+    // ... iter() would return a `tag` for visibility per layer
+    // - 'tag' is a level of indirection, like how the ref &false
     if[words, bytes, chars, lines].iter().all(|v| v == &false) {
+        // if all(closure==true) then execute this block
         lines = true;
         words = true;
         bytes = true;
     }
 
     Ok(Config{
+        // using struct field initialization shorthand to set values
         files,
         lines,
         words,
