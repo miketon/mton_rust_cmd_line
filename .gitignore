@@ -4,3 +4,6 @@
 
 # Rust artifacts
 */target
+
+# vim ctags
+*/tags
