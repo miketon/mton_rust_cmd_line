@@ -6,6 +6,12 @@ use clap::{
     crate_authors,
 };
 use std::error::Error;
+use std::fs::File;
+use std::io::{
+    self,
+    BufRead,
+    BufReader,
+};
 
 type MyResult<T> = Result<T, Box<dyn Error>>;
 
@@ -20,7 +26,13 @@ pub struct Config{
 
 pub fn run(config: Config) -> MyResult<()> {
     // @todo : process files wrt arguments and business logic here
-    println!("{:#?}", config);
+    for filename in &config.files {
+        match open(filename) {
+            Err(err) => eprintln!("<filename> {}: <err> {}", filename, err),
+            Ok(_) => println!("Opened {}", filename),
+        }
+    }
+
     Ok(())
 }
 
@@ -105,6 +117,8 @@ pub fn get_args() -> MyResult<Config> {
     // ... iter() would return a `tag` for visibility per layer
     // - 'tag' is a level of indirection, like how the ref &false
     if[words, bytes, chars, lines].iter().all(|v| v == &false) {
+    // -- shorter equivalent but arguably HARDER to READ
+    //if[words, bytes, chars, lines].iter().all(|v| !v ) {
         // if all(closure==true) then execute this block
         lines = true;
         words = true;
@@ -119,4 +133,11 @@ pub fn get_args() -> MyResult<Config> {
         bytes,
         chars, 
     })
+}
+
+fn open(filename: &str) -> MyResult<Box<dyn BufRead>> {
+    match filename {
+        "-" => Ok(Box::new(BufReader::new(io::stdin()))),
+        _ => Ok(Box::new(BufReader::new(File::open(filename)?))),
+    }
 }
