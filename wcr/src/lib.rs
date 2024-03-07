@@ -16,12 +16,20 @@ use std::io::{
 type MyResult<T> = Result<T, Box<dyn Error>>;
 
 #[derive(Debug)]
-pub struct Config{
+pub struct Config {
     files: Vec<String>,
     lines: bool,
     words: bool,
     bytes: bool,
     chars: bool,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct FileInfo {
+    num_lines: usize,
+    num_words: usize,
+    num_bytes: usize,
+    num_chars: usize,
 }
 
 pub fn run(config: Config) -> MyResult<()> {
@@ -135,9 +143,48 @@ pub fn get_args() -> MyResult<Config> {
     })
 }
 
+// @audit : Explain impl BufRead
+pub fn count(mut file: impl BufRead) -> MyResult<FileInfo> {
+   let mut num_lines = 0;
+   let mut num_words = 0;
+   let mut num_bytes = 0;
+   let mut num_chars = 0;
+
+   Ok(FileInfo {
+        num_lines,
+        num_words,
+        num_bytes,
+        num_chars,
+   })
+}
+
+// @audit : Explain what is happening with BufReader -> BufRead Result
 fn open(filename: &str) -> MyResult<Box<dyn BufRead>> {
     match filename {
         "-" => Ok(Box::new(BufReader::new(io::stdin()))),
         _ => Ok(Box::new(BufReader::new(File::open(filename)?))),
     }
+}
+
+// *** test modules ***
+// @audit : Explain difference between inlining a test vs MOD test
+#[cfg(test)] // cfg enables CONDITIONAL compilation - bin only when testing
+mod tests {
+   use super::{count, FileInfo};
+   use std::io::Cursor;
+
+   #[test]
+   fn test_count() {
+        let text = "I don't want the world.  I just want your half.\r\n";
+        let info = count(Cursor::new(text));
+        assert!(info.is_ok());
+        let expected = FileInfo {
+            num_lines: 1,
+            num_words: 10,
+            num_chars: 48,
+            num_bytes: 48,
+        };
+
+        assert_eq!(info.unwrap(), expected);
+   }
 }
