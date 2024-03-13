@@ -37,7 +37,11 @@ pub fn run(config: Config) -> MyResult<()> {
     for filename in &config.files {
         match open(filename) {
             Err(err) => eprintln!("<filename> {}: <err> {}", filename, err),
-            Ok(_) => println!("Opened {}", filename),
+            Ok(file) => {
+                if let Ok(info) = count(file) {
+                    println!("{:?}", info);
+                }
+            }
         }
     }
 
@@ -143,22 +147,40 @@ pub fn get_args() -> MyResult<Config> {
     })
 }
 
-// @audit : Explain impl BufRead
+// @udit-ok : Explain impl BufRead
+// ANSWER : file can be any type that implements BufRead
+// - BufReader, Cursor are compatible
 pub fn count(mut file: impl BufRead) -> MyResult<FileInfo> {
-   let mut num_lines = 0;
-   let mut num_words = 0;
-   let mut num_bytes = 0;
-   let mut num_chars = 0;
+    let mut num_lines = 0;
+    let mut num_words = 0;
+    let mut num_bytes = 0;
+    let mut num_chars = 0;
+    let mut line = String::new();
 
-   Ok(FileInfo {
-        num_lines,
-        num_words,
-        num_bytes,
-        num_chars,
-   })
+    // implement code to actually count here
+    loop {
+        let line_bytes = file.read_line(&mut line)?;
+        if line_bytes == 0 {
+            break;
+        }
+        num_bytes += line_bytes;
+        num_lines += 1;
+        num_words += line.split_whitespace().count();
+        num_chars += line.chars().count();
+        line.clear(); 
+    }
+
+    Ok(FileInfo {
+         num_lines,
+         num_words,
+         num_bytes,
+         num_chars,
+    })
 }
 
-// @audit : Explain what is happening with BufReader -> BufRead Result
+// @udit-ok : Explain what is happening with BufReader -> BufRead Result
+// ANSWER : open returns a boxed type that implements BufRead
+// - BufReader has BufRead impl
 fn open(filename: &str) -> MyResult<Box<dyn BufRead>> {
     match filename {
         "-" => Ok(Box::new(BufReader::new(io::stdin()))),
@@ -170,12 +192,12 @@ fn open(filename: &str) -> MyResult<Box<dyn BufRead>> {
 // @audit : Explain difference between inlining a test vs MOD test
 #[cfg(test)] // cfg enables CONDITIONAL compilation - bin only when testing
 mod tests {
-   use super::{count, FileInfo};
-   use std::io::Cursor;
+    use super::{count, FileInfo};
+    use std::io::Cursor;
 
-   #[test]
-   fn test_count() {
-        let text = "I don't want the world.  I just want your half.\r\n";
+    #[test]
+    fn test_count() {
+        let text = "I don't want the world. I just want your half.\r\n";
         let info = count(Cursor::new(text));
         assert!(info.is_ok());
         let expected = FileInfo {
@@ -186,5 +208,5 @@ mod tests {
         };
 
         assert_eq!(info.unwrap(), expected);
-   }
+    }
 }
