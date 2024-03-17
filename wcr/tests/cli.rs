@@ -57,6 +57,21 @@ fn empty() -> TestResult {
     run(&[EMPTY], "tests/expected/empty.txt.out")
 }
 
+#[test]
+fn fox() -> TestResult {
+    run(&[FOX], "tests/expected/fox.txt.out")
+}
+
+#[test]
+fn atlamal() -> TestResult {
+    run(&[ATLAMAL], "tests/expected/atlamal.txt.out")
+}
+
+#[test]
+fn test_all() -> TestResult {
+    run(&[EMPTY, FOX, ATLAMAL], "tests/expected/all.out")
+}
+
 // test for default : lines, words and bytes
 // - DEFAULT ORDER : lines, words, byte/characters
 
