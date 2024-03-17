@@ -1,3 +1,62 @@
+use assert_cmd::{cargo::CommandCargoExt, Command};
+use predicates::prelude::*;
+use rand::{distributions::Alphanumeric, Rng};
+use std::fs;
+
+type TestResult = Result<(), Box<dyn std::error::Error>>;
+
+const PRG: &str = "wcr";
+const EMPTY: &str = "tests/inputs/empty.txt";
+const FOX: &str = "tests/inputs/fox.txt";
+const ATLAMAL: &str = "tests/inputs/atlamal.txt";
+
+// --------------------------------------------------------------------------80
+
+fn run(args: &[&str], expected_file: &str) -> TestResult {
+    let expected = fs::read_to_string(expected_file)?;
+
+    Command::cargo_bin(PRG)?
+        .args(args)
+        .assert()
+        .success()
+        .stdout(expected);
+    Ok(())
+}
+
+fn gen_bad_file() -> String {
+    loop {
+        let filename = rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(7)
+            // @audit : Explain what is happening here
+            .map(char::from)
+            .collect();
+
+        if fs::metadata(&filename).is_err() {
+            return filename;
+        }
+    }
+}
+
+// --------------------------------------------------------------------------80
+#[test]
+fn dies_chars_and_bytes() -> TestResult {
+    Command::cargo_bin(PRG)?
+        .args(&["-m", "-c"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "The argument '--bytes' cannot be used with '--chars'",
+        ));
+
+    Ok(())
+}
+
+#[test]
+fn empty() -> TestResult {
+    run(&[EMPTY], "tests/expected/empty.txt.out")
+}
+
 // test for default : lines, words and bytes
 // - DEFAULT ORDER : lines, words, byte/characters
 

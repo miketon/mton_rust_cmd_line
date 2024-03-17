@@ -1,17 +1,13 @@
 use clap::{
-    App, 
-    Arg,
     // get info from Cargo.toml
-    crate_version,
     crate_authors,
+    crate_version,
+    App,
+    Arg,
 };
 use std::error::Error;
 use std::fs::File;
-use std::io::{
-    self,
-    BufRead,
-    BufReader,
-};
+use std::io::{self, BufRead, BufReader};
 
 type MyResult<T> = Result<T, Box<dyn Error>>;
 
@@ -49,7 +45,6 @@ pub fn run(config: Config) -> MyResult<()> {
 }
 
 pub fn get_args() -> MyResult<Config> {
-
     // [args] parsing
     let matches = App::new("wcr")
         // -- help info --
@@ -71,28 +66,28 @@ pub fn get_args() -> MyResult<Config> {
                 .takes_value(false) // << false == this is a FLAG
                 .help("Show byte count")
                 .short("c")
-                .long("bytes")
+                .long("bytes"),
         )
         .arg(
             Arg::with_name("chars")
                 .takes_value(false)
                 .help("Show character count")
                 .short("m")
-                .long("chars")
+                .long("chars"),
         )
         .arg(
             Arg::with_name("lines")
                 .takes_value(false)
                 .help("Show line count")
                 .short("l")
-                .long("lines")
+                .long("lines"),
         )
         .arg(
             Arg::with_name("words")
                 .takes_value(false)
                 .help("Show word count")
                 .short("w")
-                .long("words")
+                .long("words"),
         )
         .get_matches();
 
@@ -101,7 +96,7 @@ pub fn get_args() -> MyResult<Config> {
     // - so we can safely unwrap or default
     let files = matches.values_of_lossy("files").unwrap_or_default();
 
-    // [flag] check    
+    // [flag] check
     let mut lines = matches.is_present("lines");
     let mut words = matches.is_present("words");
     let mut bytes = matches.is_present("bytes");
@@ -115,7 +110,7 @@ pub fn get_args() -> MyResult<Config> {
     //   - |v| v == &false // lambda check if each |v| is false
     // - if all() are FALSE, set lines, words and bytes to TRUE
     // @PHOTOSHOP : lines, words, bytes, chars are layers
-    // - checking if all layers are hidden before proceeding with a 
+    // - checking if all layers are hidden before proceeding with a
     // certain action :
     //   - if all() are hidden, set : lines, words, bytes => visible
     // @udit-ok : Explain why compare ref &false vs value false
@@ -128,22 +123,22 @@ pub fn get_args() -> MyResult<Config> {
     // @PHOTOSHOP : Instead of the direct eye icon to toggle visibility per layer
     // ... iter() would return a `tag` for visibility per layer
     // - 'tag' is a level of indirection, like how the ref &false
-    if[words, bytes, chars, lines].iter().all(|v| v == &false) {
-    // -- shorter equivalent but arguably HARDER to READ
-    //if[words, bytes, chars, lines].iter().all(|v| !v ) {
+    if [words, bytes, chars, lines].iter().all(|v| v == &false) {
+        // -- shorter equivalent but arguably HARDER to READ
+        //if[words, bytes, chars, lines].iter().all(|v| !v ) {
         // if all(closure==true) then execute this block
         lines = true;
         words = true;
         bytes = true;
     }
 
-    Ok(Config{
+    Ok(Config {
         // using struct field initialization shorthand to set values
         files,
         lines,
         words,
         bytes,
-        chars, 
+        chars,
     })
 }
 
@@ -167,14 +162,14 @@ pub fn count(mut file: impl BufRead) -> MyResult<FileInfo> {
         num_lines += 1;
         num_words += line.split_whitespace().count();
         num_chars += line.chars().count();
-        line.clear(); 
+        line.clear();
     }
 
     Ok(FileInfo {
-         num_lines,
-         num_words,
-         num_bytes,
-         num_chars,
+        num_lines,
+        num_words,
+        num_bytes,
+        num_chars,
     })
 }
 
