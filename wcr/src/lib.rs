@@ -30,6 +30,10 @@ pub struct FileInfo {
 
 pub fn run(config: Config) -> MyResult<()> {
     // @todo : process files wrt arguments and business logic here
+    let mut file_count = 0;
+    let mut num_lines_total = 0;
+    let mut num_words_total = 0;
+    let mut num_bytes_total = 0;
     for filename in &config.files {
         match open(filename) {
             Err(err) => eprintln!("<filename> {}: <err> {}", filename, err),
@@ -40,9 +44,21 @@ pub fn run(config: Config) -> MyResult<()> {
                         "{:>8}{:>8}{:>8} {}",
                         info.num_lines, info.num_words, info.num_bytes, filename,
                     );
+                    file_count += 1;
+                    num_lines_total += info.num_lines;
+                    num_words_total += info.num_words;
+                    num_bytes_total += info.num_bytes;
                 }
             }
         }
+    }
+    // @audit : naive implementation to handle all ... check if there's a better solution with
+    // match
+    if file_count > 1 {
+        println!(
+            "{:>8}{:>8}{:>8} total",
+            num_lines_total, num_words_total, num_bytes_total
+        );
     }
 
     Ok(())
