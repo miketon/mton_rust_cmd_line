@@ -39,11 +39,19 @@ pub fn run(config: Config) -> MyResult<()> {
             Err(err) => eprintln!("<filename> {}: <err> {}", filename, err),
             Ok(file) => {
                 if let Ok(info) = count(file) {
-                    println!(
-                        // @audit : explain this print format
-                        "{:>8}{:>8}{:>8} {}",
-                        info.num_lines, info.num_words, info.num_bytes, filename,
-                    );
+                    // handle flags
+                    if config.lines {
+                        print!("{:>8}", info.num_lines);
+                    }
+                    if config.words {
+                        print!("{:>8}", info.num_words);
+                    }
+                    if config.bytes {
+                        print!("{:>8}", info.num_bytes);
+                    }
+                    println!(" {}", filename);
+
+                    // update for total
                     file_count += 1;
                     num_lines_total += info.num_lines;
                     num_words_total += info.num_words;
