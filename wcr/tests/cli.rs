@@ -151,7 +151,7 @@ fn test_all_words() -> TestResult {
 
 #[test]
 fn test_all_bytes() -> TestResult {
-    run(&["-c", EMPTY, FOX, ATLAMAL], "tests/expected.all.c.out")
+    run(&["-c", EMPTY, FOX, ATLAMAL], "tests/expected/all.c.out")
 }
 
 #[test]

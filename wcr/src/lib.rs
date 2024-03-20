@@ -39,6 +39,8 @@ pub fn run(config: Config) -> MyResult<()> {
             Err(err) => eprintln!("<filename> {}: <err> {}", filename, err),
             Ok(file) => {
                 if let Ok(info) = count(file) {
+                    // @audit : is there a more rustic approach than if
+                    // statements?
                     // handle flags
                     if config.lines {
                         print!("{:>8}", info.num_lines);
@@ -49,7 +51,16 @@ pub fn run(config: Config) -> MyResult<()> {
                     if config.bytes {
                         print!("{:>8}", info.num_bytes);
                     }
-                    println!(" {}", filename);
+                    if config.chars {
+                        print!("{:>8}", info.num_chars);
+                    }
+
+                    // don't print filename if we are getting stdin output
+                    if filename != "-" {
+                        println!(" {}", filename);
+                    } else {
+                        println!("");
+                    }
 
                     // update for total
                     file_count += 1;
@@ -60,13 +71,17 @@ pub fn run(config: Config) -> MyResult<()> {
             }
         }
     }
-    // @audit : naive implementation to handle all ... check if there's a better solution with
-    // match
+    // @audit : naive implementation to handle all ... check if there's a
+    // better solution with match
     if file_count > 1 {
-        println!(
-            "{:>8}{:>8}{:>8} total",
-            num_lines_total, num_words_total, num_bytes_total
-        );
+        if config.lines == false {
+            println!("{:>8} total", num_bytes_total);
+        } else {
+            println!(
+                "{:>8}{:>8}{:>8} total",
+                num_lines_total, num_words_total, num_bytes_total
+            );
+        }
     }
 
     Ok(())
