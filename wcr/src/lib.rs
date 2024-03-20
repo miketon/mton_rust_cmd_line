@@ -34,54 +34,34 @@ pub fn run(config: Config) -> MyResult<()> {
     let mut num_lines_total = 0;
     let mut num_words_total = 0;
     let mut num_bytes_total = 0;
+    let mut num_chars_total = 0;
+
     for filename in &config.files {
         match open(filename) {
-            Err(err) => eprintln!("<filename> {}: <err> {}", filename, err),
+            Err(err) => eprintln!(" -- filename -- {} : -- err -- {}", filename, err),
             Ok(file) => {
                 if let Ok(info) = count(file) {
-                    // @audit : is there a more rustic approach than if
-                    // statements?
-                    // handle flags
-                    if config.lines {
-                        print!("{:>8}", info.num_lines);
-                    }
-                    if config.words {
-                        print!("{:>8}", info.num_words);
-                    }
-                    if config.bytes {
-                        print!("{:>8}", info.num_bytes);
-                    }
-                    if config.chars {
-                        print!("{:>8}", info.num_chars);
-                    }
-
-                    // don't print filename if we are getting stdin output
-                    if filename != "-" {
-                        println!(" {}", filename);
-                    } else {
-                        println!("");
-                    }
-
-                    // update for total
+                    print_info(&info, &config, filename);
+                    // update totals
                     file_count += 1;
                     num_lines_total += info.num_lines;
                     num_words_total += info.num_words;
                     num_bytes_total += info.num_bytes;
+                    num_chars_total += info.num_chars;
                 }
             }
         }
     }
-    // @audit : naive implementation to handle all ... check if there's a
-    // better solution with match
+
+    // print totals if more than one file was processed
     if file_count > 1 {
-        if config.lines == false {
-            println!("{:>8} total", num_bytes_total);
-        } else {
-            println!(
-                "{:>8}{:>8}{:>8} total",
-                num_lines_total, num_words_total, num_bytes_total
-            );
-        }
+        let total_info = FileInfo {
+            num_lines: num_lines_total,
+            num_words: num_words_total,
+            num_bytes: num_bytes_total,
+            num_chars: num_chars_total,
+        };
+        print_info(&total_info, &config, "total");
     }
 
     Ok(())
@@ -223,6 +203,32 @@ fn open(filename: &str) -> MyResult<Box<dyn BufRead>> {
     match filename {
         "-" => Ok(Box::new(BufReader::new(io::stdin()))),
         _ => Ok(Box::new(BufReader::new(File::open(filename)?))),
+    }
+}
+
+fn print_info(info: &FileInfo, config: &Config, filename: &str) {
+    let mut outputs = Vec::new();
+
+    if config.lines {
+        outputs.push(format!("{:>8}", info.num_lines));
+    }
+    if config.words {
+        outputs.push(format!("{:>8}", info.num_words));
+    }
+    if config.bytes {
+        outputs.push(format!("{:>8}", info.num_bytes));
+    }
+    if config.chars {
+        outputs.push(format!("{:>8}", info.num_chars));
+    }
+
+    // join outputs with spaces and print
+    let output = outputs.join("");
+
+    if filename != "-" {
+        println!("{} {}", output, filename);
+    } else {
+        println!("{}", output);
     }
 }
 
