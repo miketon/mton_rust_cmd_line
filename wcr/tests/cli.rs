@@ -174,7 +174,14 @@ fn test_all_bytes_lines() -> TestResult {
 #[test]
 fn skips_bad_file() -> TestResult {
     let bad = gen_bad_file();
-    let expected = format!("{}: .* [(]os error 2[)]", bad);
+    // @udit-ok : is there a more elegant way to format this?
+    // ANSWER : this is NOT much better :
+    // let expected = format!(r".*{filename}.* \(os error 2\)", filename = bad);
+    // - used a raw string (indicated by r"") to avoid needing to escape the
+    // backslashes for the regex
+    // - but since there are no backslashes in this pattern, it doesn't make a
+    // difference here
+    let expected = format!(".*{}.* [(]os error 2[)]", bad);
     Command::cargo_bin(PRG)?
         .arg(bad)
         .assert()

@@ -38,7 +38,7 @@ pub fn run(config: Config) -> MyResult<()> {
 
     for filename in &config.files {
         match open(filename) {
-            Err(err) => eprintln!(" -- filename -- {} : -- err -- {}", filename, err),
+            Err(err) => eprintln!("[{}]: --> [error] {}", filename, err),
             Ok(file) => {
                 if let Ok(info) = count(file) {
                     print_info(&info, &config, filename);
