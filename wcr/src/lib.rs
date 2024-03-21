@@ -93,6 +93,7 @@ pub fn get_args() -> MyResult<Config> {
         )
         .arg(
             Arg::with_name("chars")
+                .conflicts_with("bytes")
                 .takes_value(false)
                 .help("Show character count")
                 .short("m")

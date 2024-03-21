@@ -196,6 +196,7 @@ fn dies_chars_and_bytes() -> TestResult {
         .args(&["-m", "-c"])
         .assert()
         .failure()
+        // @audit : Explain how to determine this predicate string
         .stderr(predicate::str::contains(
             "The argument '--bytes' cannot be used with '--chars'",
         ));
