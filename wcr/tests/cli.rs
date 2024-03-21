@@ -146,7 +146,7 @@ fn test_all_lines() -> TestResult {
 
 #[test]
 fn test_all_words() -> TestResult {
-    run(&["-w", EMPTY, FOX, ATLAMAL], "tests/expected.all.w.out")
+    run(&["-w", EMPTY, FOX, ATLAMAL], "tests/expected/all.w.out")
 }
 
 #[test]
@@ -166,7 +166,7 @@ fn test_all_words_lines() -> TestResult {
 
 #[test]
 fn test_all_bytes_lines() -> TestResult {
-    run(&["cl", EMPTY, FOX, ATLAMAL], "tests/expected/all.cl.out")
+    run(&["-cl", EMPTY, FOX, ATLAMAL], "tests/expected/all.cl.out")
 }
 
 // --------------------------------------------------------------------------80
