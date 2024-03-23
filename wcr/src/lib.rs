@@ -30,38 +30,54 @@ pub struct FileInfo {
 
 pub fn run(config: Config) -> MyResult<()> {
     // @todo : process files wrt arguments and business logic here
-    let mut file_count = 0;
-    let mut num_lines_total = 0;
-    let mut num_words_total = 0;
-    let mut num_bytes_total = 0;
-    let mut num_chars_total = 0;
+    let mut lines_total = 0;
+    let mut words_total = 0;
+    let mut bytes_total = 0;
+    let mut chars_total = 0;
 
     for filename in &config.files {
         match open(filename) {
             Err(err) => eprintln!("[{}]: --> [error] {}", filename, err),
             Ok(file) => {
                 if let Ok(info) = count(file) {
-                    print_info(&info, &config, filename);
-                    // update totals
-                    file_count += 1;
-                    num_lines_total += info.num_lines;
-                    num_words_total += info.num_words;
-                    num_bytes_total += info.num_bytes;
-                    num_chars_total += info.num_chars;
+                    // display count from current file
+                    println!(
+                        "{}{}{}{}{}",
+                        format_field(info.num_lines, config.lines),
+                        format_field(info.num_words, config.words),
+                        format_field(info.num_bytes, config.bytes),
+                        format_field(info.num_chars, config.chars),
+                        if filename == "-" {
+                            // don't print filename if stdin
+                            // @audit : what's the tradeoff between :
+                            // - "".to_string()
+                            // - format!("")
+                            // "".to_string()
+                            format!("")
+                        } else {
+                            format!(" {}", &filename)
+                        },
+                    );
+
+                    // accumulate count across files
+                    lines_total += info.num_lines;
+                    words_total += info.num_words;
+                    bytes_total += info.num_bytes;
+                    chars_total += info.num_chars;
                 }
             }
         }
     }
 
-    // print totals if more than one file was processed
-    if file_count > 1 {
-        let total_info = FileInfo {
-            num_lines: num_lines_total,
-            num_words: num_words_total,
-            num_bytes: num_bytes_total,
-            num_chars: num_chars_total,
-        };
-        print_info(&total_info, &config, "total");
+    // print total if more than one file was processed
+    if config.files.len() > 1 {
+        println!(
+            "{}{}{}{} total",
+            format_field(lines_total, config.lines),
+            format_field(words_total, config.words),
+            format_field(bytes_total, config.bytes),
+            format_field(chars_total, config.chars),
+        );
     }
 
     Ok(())
@@ -179,6 +195,7 @@ pub fn count(mut file: impl BufRead) -> MyResult<FileInfo> {
     // implement code to actually count here
     loop {
         let line_bytes = file.read_line(&mut line)?;
+        // @audit : explain the reason on breaking loop on value 0 specifically
         if line_bytes == 0 {
             break;
         }
@@ -186,6 +203,7 @@ pub fn count(mut file: impl BufRead) -> MyResult<FileInfo> {
         num_lines += 1;
         num_words += line.split_whitespace().count();
         num_chars += line.chars().count();
+        // @audit : explain why we are clearing the line here
         line.clear();
     }
 
@@ -207,29 +225,12 @@ fn open(filename: &str) -> MyResult<Box<dyn BufRead>> {
     }
 }
 
-fn print_info(info: &FileInfo, config: &Config, filename: &str) {
-    let mut outputs = Vec::new();
-
-    if config.lines {
-        outputs.push(format!("{:>8}", info.num_lines));
-    }
-    if config.words {
-        outputs.push(format!("{:>8}", info.num_words));
-    }
-    if config.bytes {
-        outputs.push(format!("{:>8}", info.num_bytes));
-    }
-    if config.chars {
-        outputs.push(format!("{:>8}", info.num_chars));
-    }
-
-    // join outputs with spaces and print
-    let output = outputs.join("");
-
-    if filename != "-" {
-        println!("{} {}", output, filename);
+fn format_field(value: usize, show: bool) -> String {
+    if show {
+        // @audit : explain why no ; needed
+        format!("{:>8}", value)
     } else {
-        println!("{}", output);
+        "".to_string()
     }
 }
 
@@ -237,7 +238,10 @@ fn print_info(info: &FileInfo, config: &Config, filename: &str) {
 // @audit : Explain difference between inlining a test vs MOD test
 #[cfg(test)] // cfg enables CONDITIONAL compilation - bin only when testing
 mod tests {
-    use super::{count, FileInfo};
+    // @audit : Explain the tradeoff between
+    // - use super::format_field
+    // - use cargo::format_field
+    use super::{count, format_field, FileInfo};
     use std::io::Cursor;
 
     #[test]
@@ -253,5 +257,13 @@ mod tests {
         };
 
         assert_eq!(info.unwrap(), expected);
+    }
+
+    #[test]
+    fn test_format_field() {
+        assert_eq!(format_field(1, false), "");
+        #[rustfmt::skip] // line up spaces
+        assert_eq!(format_field( 3, true), "       3");
+        assert_eq!(format_field(10, true), "      10");
     }
 }
